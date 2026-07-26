@@ -2,21 +2,123 @@
 <html lang="ur">
 <head>
   <meta charset="UTF-8">
-  <title>Ammar AI</title>
+  <title>Ammar AI - Student Version</title>
   <style>
-    body { font-family: Arial; background: #111; color: #fff; padding: 20px; max-width: 600px; margin: auto; }
-    #chatBox { height: 400px; overflow-y: auto; border: 1px solid #444; padding: 10px; margin-bottom: 10px; border-radius: 8px; }
-    input, button { padding: 10px; border-radius: 6px; border: none; }
-    input { width: 75%; background: #222; color: #fff; }
-    button { width: 20%; background: #0070f3; color: #fff; cursor: pointer; }
+    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background: #0f172a; color: #fff; margin: 0; padding: 20px; }
+    .container { max-width: 700px; margin: auto; background: #1e293b; padding: 20px; border-radius: 12px; }
+    h2 { text-align: center; color: #38bdf8; }
+    select, input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: none; font-size: 16px; }
+    select, input { background: #334155; color: #fff; }
+    button { background: #38bdf8; color: #000; font-weight: bold; cursor: pointer; }
+    button:hover { background: #0ea5e9; }
+    #chatBox { height: 350px; overflow-y: auto; background: #0f172a; padding: 10px; border-radius: 8px; margin: 10px 0; }
+    .msg { margin: 8px 0; padding: 8px; border-radius: 6px; }
+    .user { background: #38bdf8; color: #000; text-align: right; }
+    .ai { background: #334155; color: #fff; text-align: left; }
+    .footer { text-align: center; margin-top: 15px; font-size: 14px; color: #94a3b8; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
-  <h2>🤖 Ammar AI</h2>
-  <div id="chatBox"></div>
-  <input type="text" id="userInput" placeholder="Kuch poochain...">
-  <button id="sendBtn">Send</button>
+  <div class="container">
+    <h2>🤖 Ammar AI - Learning Bot</h2>
 
-  <script src="script.js"></script>
+    <!-- Step 1: Name -->
+    <div id="nameBox">
+      <input type="text" id="studentName" placeholder="Apna Naam likhein">
+      <button onclick="saveName()">Start</button>
+    </div>
+
+    <!-- Step 2: Main App -->
+    <div id="appBox" class="hidden">
+      <label>Class Select karein:</label>
+      <select id="classSelect">
+        <option value="3">Class 3</option><option value="4">Class 4</option><option value="5">Class 5</option>
+        <option value="6">Class 6</option><option value="7">Class 7</option><option value="8">Class 8</option>
+        <option value="9">Class 9</option><option value="10">Class 10</option><option value="11">Class 11</option><option value="12">Class 12</option>
+      </select>
+
+      <label>Language Select karein:</label>
+      <select id="langSelect">
+        <option value="Urdu">Urdu</option>
+        <option value="English">English</option>
+        <option value="Italian">Italian</option>
+        <option value="Spanish">Spanish</option>
+        <option value="Hindi">Hindi</option>
+        <option value="Punjabi">Punjabi</option>
+        <option value="Arabic">Arabic</option>
+      </select>
+
+      <div id="chatBox"></div>
+      <input type="text" id="userInput" placeholder="Apna sawal likhein...">
+      <button id="sendBtn">Send</button>
+      <button onclick="clearHistory()" style="background:#ef4444; color:#fff;">History Clear</button>
+    </div>
+
+    <div class="footer">Created by AmmarYasin</div>
+  </div>
+
+<script>
+// Name save
+function saveName() {
+  const name = document.getElementById("studentName").value.trim();
+  if(!name) return alert("Naam likhna zaroori hai");
+  localStorage.setItem("studentName", name);
+  document.getElementById("nameBox").classList.add("hidden");
+  document.getElementById("appBox").classList.remove("hidden");
+  loadHistory();
+}
+
+// Send Message
+document.getElementById("sendBtn").onclick = async () => {
+  const message = document.getElementById("userInput").value.trim();
+  const classVal = document.getElementById("classSelect").value;
+  const langVal = document.getElementById("langSelect").value;
+  const name = localStorage.getItem("studentName");
+  if(!message) return;
+
+  addMsg("user", `${name}: ${message}`);
+  document.getElementById("userInput").value = "";
+
+  // Save to history
+  let history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+  history.push({role: "user", text: message, class: classVal, lang: langVal});
+  localStorage.setItem("chatHistory", JSON.stringify(history));
+
+  const prompt = `Tum Ammar AI ho. Tum Class ${classVal} ke student ko ${langVal} zaban me 2-3 line me simple tareeqe se samjhao. Student ka naam ${name} hai. Sawal: ${message}`;
+
+  try {
+    const res = await fetch('/api/ai', {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ message: prompt })
+    });
+    const data = await res.json();
+    
+    addMsg("ai", data.reply);
+    history.push({role: "ai", text: data.reply});
+    localStorage.setItem("chatHistory", JSON.stringify(history));
+  } catch {
+    addMsg("ai", "Error: Server se rabta nahi ho raha");
+  }
+};
+
+function addMsg(role, text) {
+  const chatBox = document.getElementById("chatBox");
+  chatBox.innerHTML += `<div class="msg ${role}"><b>${role==='user'?'Aap':'AI'}:</b> ${text}</div>`;
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function loadHistory() {
+  let history = JSON.parse(localStorage.getItem("chatHistory") || "[]");
+  history.forEach(h => addMsg(h.role, h.text));
+}
+
+function clearHistory() {
+  localStorage.removeItem("chatHistory");
+  document.getElementById("chatBox").innerHTML = "";
+}
+</script>
 </body>
 </html>
