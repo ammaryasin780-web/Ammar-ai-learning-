@@ -1,23 +1,29 @@
-export default async (req) => {
-  const { message } = await req.json();
-  const API_KEY = process.env.GEMINI_API_KEY;
+const sendBtn = document.getElementById("sendBtn");
+const userInput = document.getElementById("userInput");
+const chatBox = document.getElementById("chatBox");
 
-  // Adult filter
-  const badWords = ["sex", "adult", "porn", "nanga"];
-  if(badWords.some(word => message.toLowerCase().includes(word))){
-    return new Response(JSON.stringify({ reply: "Main is qism ke sawalon ka jawab nahi de sakta." }), {headers:{"Content-Type":"application/json"}});
+sendBtn.addEventListener("click", sendMessage);
+userInput.addEventListener("keypress", (e) => { if(e.key === "Enter") sendMessage() });
+
+async function sendMessage() {
+  const message = userInput.value.trim();
+  if(!message) return;
+
+  chatBox.innerHTML += `<div><b>Aap:</b> ${message}</div>`;
+  userInput.value = "";
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  try {
+    const res = await fetch('/api/ai', {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ message })
+    });
+
+    const data = await res.json();
+    chatBox.innerHTML += `<div><b>AI:</b> ${data.reply}</div>`;
+  } catch (error) {
+    chatBox.innerHTML += `<div><b>AI:</b> Error aa gaya. Server check karein.</div>`;
   }
-
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: `Tum Ammar AI ho. Urdu me jawab do. Adult ho to mana kar do. Sawal: ${message}` }]
-    })
-  });
-  
-  const data = await res.json();
-  const reply = data.candidates[0].content.parts[0].text;
-
-  return new Response(JSON.stringify({ reply }), {headers:{"Content-Type":"application/json"}});
-};
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
