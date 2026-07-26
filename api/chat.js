@@ -1,107 +1,71 @@
-const startBtn = document.getElementById("startBtn");
-const continueBtn = document.getElementById("continueBtn");
-const sendBtn = document.getElementById("sendBtn");
+export default async function handler(req, res) {
 
-const welcomeScreen = document.getElementById("welcomeScreen");
-const setupScreen = document.getElementById("setupScreen");
-const chatScreen = document.getElementById("chatScreen");
+  if (req.method !== "POST") {
+    return res.status(405).json({
+      error: "Only POST method allowed"
+    });
+  }
 
-const chatBox = document.getElementById("chatBox");
-const userInput = document.getElementById("userInput");
+  try {
 
+    const { message } = req.body;
 
-startBtn.onclick = () => {
+    const apiKey = process.env.GEMINI_API_KEY;
 
-    welcomeScreen.style.display = "none";
-    setupScreen.style.display = "flex";
-
-};
-
-
-continueBtn.onclick = () => {
-
-    let name = document.getElementById("studentName").value;
-
-    if(name === ""){
-        alert("Enter your name");
-        return;
+    if (!apiKey) {
+      return res.status(500).json({
+        error: "GEMINI_API_KEY missing"
+      });
     }
 
 
-    setupScreen.style.display = "none";
-    chatScreen.style.display = "block";
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: message
+                }
+              ]
+            }
+          ]
+        })
+      }
+    );
 
 
-    chatBox.innerHTML += `
-    <p><b>Ammar AI:</b> Welcome ${name}! Ask me anything.</p>
-    `;
-
-};
+    const data = await geminiResponse.json();
 
 
-
-sendBtn.onclick = async () => {
-
-
-    let message = userInput.value.trim();
-
-
-    if(message === "") return;
-
-
-    chatBox.innerHTML += `
-    <p><b>You:</b> ${message}</p>
-    `;
-
-
-    userInput.value = "";
-
-
-    chatBox.innerHTML += `
-    <p><b>Ammar AI:</b> Thinking...</p>
-    `;
-
-
-
-    try {
-
-
-        const response = await fetch("/api/chat", {
-
-            method:"POST",
-
-            headers:{
-                "Content-Type":"application/json"
-            },
-
-
-            body:JSON.stringify({
-                message: message
-            })
-
-
-        });
-
-
-
-        const data = await response.json();
-
-
-        chatBox.innerHTML += `
-        <p><b>Ammar AI:</b> ${data.reply || data.error}</p>
-        `;
-
-
-
-    } catch(error){
-
-
-        chatBox.innerHTML += `
-        <p><b>Error:</b> ${error.message}</p>
-        `;
-
-
+    if (data.error) {
+      return res.status(500).json({
+        error: data.error.message
+      });
     }
 
 
-};
+    const reply =
+      data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+
+    return res.status(200).json({
+      reply: reply || "No reply found"
+    });
+
+
+  } catch (error) {
+
+    return res.status(500).json({
+      error: error.message
+    });
+
+  }
+
+}
