@@ -25,4 +25,4 @@ export default async function handler(req, res) {
   } catch (error) {
     res.status(500).json({ reply: "Error aa gaya. Key check karein." });
   }
-}
+} // <- ye wala bracket missing tha
