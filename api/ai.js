@@ -11,11 +11,17 @@ export default async function handler(req, res) {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify({
-        contents: [{ parts: [{ text: message }] }]
+        contents: [{ parts: [{ text: message }]
       })
     });
 
     const data = await response.json();
+    
+    // Yahan check lagaya hai
+    if(!data.candidates ||!data.candidates[0]) {
+      return res.status(500).json({reply: "Error: Google se jawab nahi aya. Key check karein: " + JSON.stringify(data)});
+    }
+
     const reply = data.candidates[0].content.parts[0].text;
     res.status(200).json({ reply });
   } catch (error) {
