@@ -3,17 +3,16 @@ export default async (req) => {
   const API_KEY = process.env.GEMINI_API_KEY;
 
   // Adult filter
-  const badWords = ["sex", "adult", "porn", "nanga", "gandi"];
+  const badWords = ["sex", "adult", "porn", "nanga"];
   if(badWords.some(word => message.toLowerCase().includes(word))){
-    return new Response(JSON.stringify({ reply: "Main is qism ke sawalon ka jawab nahi de sakta. Koi taleemi sawal poochein?" }), {headers:{"Content-Type":"application/json"}});
+    return new Response(JSON.stringify({ reply: "Main is qism ke sawalon ka jawab nahi de sakta." }), {headers:{"Content-Type":"application/json"}});
   }
 
-  // Gemini ko call
   const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     body: JSON.stringify({
-      contents: [{ parts: [{ text: `Tum Ammar AI ho. Urdu me jawab do. Adult baat ho to mana kar do. Sawal: ${message}` }] }]
+      contents: [{ parts: [{ text: `Tum Ammar AI ho. Urdu me jawab do. Adult ho to mana kar do. Sawal: ${message}` }]
     })
   });
   
