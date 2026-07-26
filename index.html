@@ -17,20 +17,16 @@
 
 <div class="welcome-card">
 
-<div class="logo">
-🎓
-</div>
+<div class="logo">🎓</div>
 
 <h1>Welcome to Ammar AI Learning</h1>
 
 <p>
-Assalamu Alaikum 👋
-<br><br>
-I am Ammar AI Learning.
-I'm here to help students and answer your questions.
+Assalamu Alaikum 👋<br><br>
+I am Ammar AI Learning. I'm here to help students and answer your questions.
 </p>
 
-<button id="startBtn">
+<button id="startBtn" class="main-btn">
 Start Learning
 </button>
 
@@ -43,6 +39,14 @@ Start Learning
 <div id="setupScreen" class="setup-screen hidden">
 
 <div class="setup-card">
+
+<h2>Enter Your Name</h2>
+
+<input
+type="text"
+id="studentName"
+class="input-box"
+placeholder="Enter your name">
 
 <h2>Select Your Class</h2>
 
@@ -68,20 +72,15 @@ Start Learning
 <select id="languageSelect">
 
 <option value="Urdu">🇵🇰 Urdu</option>
-
 <option value="Punjabi">🇵🇰 Punjabi</option>
-
 <option value="English">🇬🇧 English</option>
-
 <option value="Italian">🇮🇹 Italian</option>
-
 <option value="Spanish">🇪🇸 Spanish</option>
-
 <option value="Hindi">🇮🇳 Hindi</option>
 
 </select>
 
-<button id="continueBtn">
+<button id="continueBtn" class="main-btn">
 Continue
 </button>
 
@@ -95,13 +94,11 @@ Continue
 
 <header>
 
-<h2>Ammar AI Learning</h2>
+<h2>🤖 Ammar AI Learning</h2>
 
 </header>
 
-<div id="chatBox">
-
-</div>
+<div id="chatBox"></div>
 
 <div class="input-area">
 
@@ -111,9 +108,7 @@ id="userInput"
 placeholder="Ask anything...">
 
 <button id="sendBtn">
-
 <i class="fa-solid fa-paper-plane"></i>
-
 </button>
 
 </div>
@@ -123,192 +118,4 @@ placeholder="Ask anything...">
 <script src="script.js"></script>
 
 </body>
-</html>*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
-}
-
-body{
-background:#0f172a;
-color:#fff;
-height:100vh;
-overflow:hidden;
-}
-
-.hidden{
-display:none;
-}
-
-.welcome-screen,
-.setup-screen{
-width:100%;
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-background:linear-gradient(135deg,#2563eb,#7c3aed);
-}
-
-.welcome-card,
-.setup-card{
-background:#ffffff;
-color:#111827;
-width:90%;
-max-width:420px;
-padding:35px;
-border-radius:20px;
-text-align:center;
-box-shadow:0 10px 30px rgba(0,0,0,.3);
-animation:pop .5s ease;
-}
-
-.logo{
-font-size:70px;
-margin-bottom:15px;
-animation:float 2sconst welcomeScreen = document.getElementById("welcomeScreen");
-const setupScreen = document.getElementById("setupScreen");
-const chatScreen = document.getElementById("chatScreen");
-
-const startBtn = document.getElementById("startBtn");
-const continueBtn = document.getElementById("continueBtn");
-const sendBtn = document.getElementById("sendBtn");
-
-const classSelect = document.getElementById("classSelect");
-const languageSelect = document.getElementById("languageSelect");
-
-const userInput = document.getElementById("userInput");
-const chatBox = document.getElementById("chatBox");
-
-let selectedClass = localStorage.getItem("studentClass") || "";
-let selectedLanguage = localStorage.getItem("studentLanguage") || "Urdu";
-
-if (selectedClass) classSelect.value = selectedClass;
-languageSelect.value = selectedLanguage;
-
-// Start Button
-startBtn.onclick = () => {
-    welcomeScreen.classList.add("hidden");
-    setupScreen.classList.remove("hidden");
-};
-
-// Continue Button
-continueBtn.onclick = () => {
-
-    if (classSelect.value == "") {
-        alert("Please select your class.");
-        return;
-    }
-
-    selectedClass = classSelect.value;
-    selectedLanguage = languageSelect.value;
-
-    localStorage.setItem("studentClass", selectedClass);
-    localStorage.setItem("studentLanguage", selectedLanguage);
-
-    setupScreen.classList.add("hidden");
-    chatScreen.classList.remove("hidden");
-
-    loadHistory();
-};
-
-// Send Button
-sendBtn.onclick = sendMessage;
-
-userInput.addEventListener("keypress", function(e){
-    if(e.key==="Enter"){
-        sendMessage();
-    }
-});
-
-async function sendMessage(){
-
-    const message = userInput.value.trim();
-
-    if(message==="") return;
-
-    addMessage("You",message);
-
-    userInput.value="";
-
-    addMessage("AI","Typing...");
-
-    try{
-
-        const response = await fetch("/api/chat",{
-
-            method:"POST",
-
-            headers:{
-                "Content-Type":"application/json"
-            },
-
-            body:JSON.stringify({
-
-                message:message,
-
-                language:selectedLanguage,
-
-                class:selectedClass
-
-            })
-
-        });
-
-        const data = await response.json();
-
-        chatBox.lastChild.remove();
-
-        addMessage("AI",data.reply);
-
-        saveHistory("You",message);
-        saveHistory("AI",data.reply);
-
-    }catch(error){
-
-        chatBox.lastChild.remove();
-
-        addMessage("AI","Server se rabta nahi ho saka.");
-
-    }
-
-}
-
-function addMessage(sender,text){
-
-    const div=document.createElement("div");
-
-    div.className="message";
-
-    div.innerHTML="<b>"+sender+":</b><br>"+text;
-
-    chatBox.appendChild(div);
-
-    chatBox.scrollTop=chatBox.scrollHeight;
-
-}
-
-function saveHistory(sender,text){
-
-    let history=JSON.parse(localStorage.getItem("history"))||[];
-
-    history.push({sender,text});
-
-    localStorage.setItem("history",JSON.stringify(history));
-
-}
-
-function loadHistory(){
-
-    chatBox.innerHTML="";
-
-    let history=JSON.parse(localStorage.getItem("history"))||[];
-
-    history.forEach(item=>{
-
-        addMessage(item.sender,item.text);
-
-    });
-
-}
+</html>
