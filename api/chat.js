@@ -2,7 +2,7 @@ export default async function handler(req, res) {
 
   if (req.method !== "POST") {
     return res.status(405).json({
-      error: "Only POST allowed"
+      error: "Method not allowed"
     });
   }
 
@@ -14,16 +14,15 @@ export default async function handler(req, res) {
 
     if (!apiKey) {
       return res.status(500).json({
-        error: "API key missing"
+        error: "GEMINI_API_KEY missing"
       });
     }
 
 
-    const result = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey,
       {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json"
         },
@@ -33,7 +32,9 @@ export default async function handler(req, res) {
             {
               parts: [
                 {
-                  text: message
+                  text: 
+                  "You are Ammar AI Learning. Help students with study and general questions. Avoid adult content.\n\nUser: " 
+                  + message
                 }
               ]
             }
@@ -43,10 +44,10 @@ export default async function handler(req, res) {
     );
 
 
-    const data = await result.json();
+    const data = await response.json();
 
 
-    if(data.error){
+    if (data.error) {
       return res.status(500).json({
         error: data.error.message
       });
@@ -58,11 +59,11 @@ export default async function handler(req, res) {
 
 
     res.status(200).json({
-      reply: reply || "No response received"
+      reply: reply || "No reply generated"
     });
 
 
-  } catch(error){
+  } catch(error) {
 
     res.status(500).json({
       error: error.message
