@@ -1,41 +1,73 @@
 export default async function handler(req, res) {
+
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({
+      error: "Only POST allowed"
+    });
   }
 
   try {
+
     const { message } = req.body;
 
-    const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" +
-        process.env.GEMINI_API_KEY,
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({
+        error: "API key missing"
+      });
+    }
+
+
+    const result = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
+
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
+
         body: JSON.stringify({
           contents: [
             {
               parts: [
                 {
-                  text: message,
-                },
-              ],
-            },
-          ],
-        }),
+                  text: message
+                }
+              ]
+            }
+          ]
+        })
       }
     );
 
-    const data = await response.json();
+
+    const data = await result.json();
+
+
+    if(data.error){
+      return res.status(500).json({
+        error: data.error.message
+      });
+    }
+
 
     const reply =
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "No response received";
+      data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    res.status(200).json({ reply });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+
+    res.status(200).json({
+      reply: reply || "No response received"
+    });
+
+
+  } catch(error){
+
+    res.status(500).json({
+      error: error.message
+    });
+
   }
+
 }
