@@ -1,26 +1,27 @@
-alert("Continue button clicked");
+document.getElementById("sendBtn").onclick = async function () {
 
-document.getElementById("startBtn").onclick = function () {
-    document.getElementById("welcomeScreen").style.display = "none";
-    document.getElementById("setupScreen").style.display = "flex";
-};
+    let message = document.getElementById("userInput").value;
 
+    if(message === "") return;
 
-document.getElementById("continueBtn").onclick = function () {
+    let chatBox = document.getElementById("chatBox");
 
-    let name = document.getElementById("studentName").value;
-    let studentClass = document.getElementById("classSelect").value;
-    let language = document.getElementById("languageSelect").value;
+    chatBox.innerHTML += `<p><b>You:</b> ${message}</p>`;
 
-    if (name === "" || studentClass === "") {
-        alert("Please enter your name and select class");
-        return;
-    }
+    let response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            message: message + 
+            "\nAnswer as a helpful AI teacher. Help with education and general questions. Do not provide adult content."
+        })
+    });
 
-    document.getElementById("setupScreen").style.display = "none";
-    document.getElementById("chatScreen").style.display = "block";
+    let data = await response.json();
 
-    console.log("Name:", name);
-    console.log("Class:", studentClass);
-    console.log("Language:", language);
+    chatBox.innerHTML += `<p><b>Ammar AI:</b> ${data.reply}</p>`;
+
+    document.getElementById("userInput").value = "";
 };
