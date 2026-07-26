@@ -1,0 +1,3 @@
+const welcomeScreen = document.getElementById("welcomeScreen");
+const setupScreen = document.getElementById("setupScreen");
+...
