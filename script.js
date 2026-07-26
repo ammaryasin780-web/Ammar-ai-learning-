@@ -12,7 +12,7 @@ const chatBox = document.getElementById("chatBox");
 const userInput = document.getElementById("userInput");
 
 
-// Start Button
+// Start Learning Button
 
 startBtn.onclick = function () {
     welcomeScreen.style.display = "none";
@@ -28,75 +28,103 @@ continueBtn.onclick = function () {
     let studentClass = document.getElementById("classSelect").value;
     let language = document.getElementById("languageSelect").value;
 
-    if(name === "" || studentClass === ""){
+
+    if (name === "" || studentClass === "") {
         alert("Please enter name and class");
         return;
     }
+
 
     localStorage.setItem("name", name);
     localStorage.setItem("class", studentClass);
     localStorage.setItem("language", language);
 
+
     setupScreen.style.display = "none";
     chatScreen.style.display = "block";
 
+
     chatBox.innerHTML += `
-    <p><b>Ammar AI:</b> Assalamu Alaikum ${name}! 
-    How can I help you today?</p>
+    <p>
+    <b>Ammar AI:</b> Assalamu Alaikum ${name}! 👋<br>
+    I am ready to help you.
+    </p>
     `;
 };
 
 
-// Send Message
+
+// Send Message Button
 
 sendBtn.onclick = async function () {
 
+
     let message = userInput.value.trim();
 
-    if(message === "") return;
+
+    if (message === "") {
+        return;
+    }
 
 
     chatBox.innerHTML += `
     <p><b>You:</b> ${message}</p>
     `;
 
+
     userInput.value = "";
 
 
+    chatBox.innerHTML += `
+    <p><b>Ammar AI:</b> Thinking...</p>
+    `;
+
+
+
     try {
+
 
         let response = await fetch("/api/chat", {
 
             method: "POST",
 
-            headers:{
-                "Content-Type":"application/json"
+            headers: {
+                "Content-Type": "application/json"
             },
+
 
             body: JSON.stringify({
 
-                message:
-                message +
-                "\nYou are Ammar AI Learning, a helpful teacher. Answer students politely. Do not provide adult content."
+                message: message,
+                language: localStorage.getItem("language") || "English"
 
             })
 
         });
 
 
+
         let data = await response.json();
 
 
         chatBox.innerHTML += `
-        <p><b>Ammar AI:</b> ${data.reply}</p>
+        <p>
+        <b>Ammar AI:</b>
+        ${data.reply || data.error || JSON.stringify(data)}
+        </p>
         `;
 
 
-    } catch(error){
+
+    } catch (error) {
+
 
         chatBox.innerHTML += `
-        <p><b>Error:</b> AI response failed</p>
+        <p>
+        <b>Error:</b> ${error.message}
+        </p>
         `;
+
 
         console.log(error);
 
