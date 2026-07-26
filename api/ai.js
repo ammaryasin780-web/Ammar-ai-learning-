@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   }
 
   if (req.method !== "POST") {
-    return res.status(405).json({ reply: "Method not allowed" });
+    return res.status(405).json({ reply: "Method not allowed." });
   }
 
   try {
@@ -18,20 +18,27 @@ export default async function handler(req, res) {
 
     if (!API_KEY) {
       return res.status(500).json({
-        reply: "GEMINI_API_KEY Vercel Environment Variables mein add nahi hai."
+        reply: "GEMINI_API_KEY is missing in Vercel Environment Variables."
       });
     }
 
     const prompt = `
-You are Ammar AI Learning Bot.
+You are Ammar AI Learning.
 
-Language: ${language || "Urdu"}
-Class: ${className || "All Classes"}
+Always be friendly and helpful.
 
-Student Question:
+Student Class: ${className}
+Language: ${language}
+
+Rules:
+- Answer ALL normal questions.
+- Reply in the selected language.
+- If the question is educational, explain according to the selected class.
+- Refuse only adult, explicit or sexual requests politely.
+- Keep answers clear and accurate.
+
+Question:
 ${message}
-
-Answer in a simple, friendly and helpful way.
 `;
 
     const response = await fetch(
@@ -39,19 +46,19 @@ Answer in a simple, friendly and helpful way.
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           contents: [
             {
               parts: [
                 {
-                  text: prompt,
-                },
-              ],
-            },
-          ],
-        }),
+                  text: prompt
+                }
+              ]
+            }
+          ]
+        })
       }
     );
 
@@ -59,19 +66,19 @@ Answer in a simple, friendly and helpful way.
 
     if (!response.ok) {
       return res.status(response.status).json({
-        reply: data.error?.message || "Google API Error",
+        reply: data.error?.message || "Google API Error"
       });
     }
 
     const reply =
       data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "Maaf kijiye, AI se koi jawab nahi mila.";
+      "Sorry, I couldn't generate a reply.";
 
     return res.status(200).json({ reply });
 
-  } catch (err) {
+  } catch (error) {
     return res.status(500).json({
-      reply: "Server Error: " + err.message,
+      reply: "Server Error: " + error.message
     });
   }
 }
