@@ -3,39 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ammar AI</title>
+<title>Ammar AI Chat</title>
 <style>
-body{margin:0;background:linear-gradient(135deg,#667eea,#764ba2);font-family:Arial;display:flex;justify-content:center;align-items:center;height:100vh}
-.box{background:#fff;width:95%;max-width:500px;height:85vh;border-radius:20px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3)}
-.head{background:#667eea;color:#fff;padding:18px;text-align:center;font-size:20px;font-weight:bold}
-#chat{flex:1;padding:15px;overflow-y:auto;background:#f5f5f5}
-.m{margin:8px 0;padding:10px 14px;border-radius:15px;max-width:80%}
-.u{background:#667eea;color:#fff;margin-left:auto}
-.a{background:#e0e0e0;color:#000;margin-right:auto}
-.inp{display:flex;padding:12px;background:#fff;border-top:1px solid #ddd}
-#msg{flex:1;padding:10px;border:2px solid #667eea;border-radius:20px;outline:none}
-#btn{background:#667eea;color:#fff;border:none;padding:10px 18px;margin-left:8px;border-radius:20px;cursor:pointer}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);height:100vh;display:flex;align-items:center;justify-content:center;font-family:Arial}
+.chat{background:#fff;width:95%;max-width:550px;height:90vh;border-radius:20px;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,0.3)}
+.header{background:#667eea;color:#fff;padding:20px;text-align:center;font-size:22px;font-weight:bold}
+.messages{flex:1;overflow-y:auto;padding:20px;background:#f8f9fa}
+.msg{padding:12px 16px;margin:10px 0;border-radius:18px;max-width:80%}
+.user{background:#667eea;color:#fff;margin-left:auto}
+.ai{background:#e9ecef;color:#333;margin-right:auto}
+.input{display:flex;padding:15px;background:#fff;border-top:1px solid #ddd}
+#text{flex:1;padding:12px 18px;border:2px solid #667eea;border-radius:25px;outline:none;font-size:16px}
+#send{background:#667eea;color:#fff;border:none;padding:12px 22px;margin-left:10px;border-radius:25px;cursor:pointer;font-weight:bold}
 </style>
 </head>
 <body>
-<div class="box">
-<div class="head">🤖 Ammar AI</div>
-<div id="chat"><div class="m a">Salam! Main Ammar AI hun. Kuch poochein 👇</div></div>
-<div class="inp">
-<input id="msg" placeholder="Message likhein...">
-<button id="btn" onclick="send()">Send</button>
+<div class="chat">
+<div class="header">🤖 Ammar AI</div>
+<div class="messages" id="messages"><div class="msg ai">Salam! Main Ammar AI hun. Kya poochna hai? 😊</div></div>
+<div class="input">
+<input id="text" placeholder="Yahan likhein...">
+<button id="send" onclick="send()">Send</button>
 </div>
 </div>
-
 <script>
 async function send(){
-let i=document.getElementById('msg');let t=i.value;if(!t)return;
-add(t,'u');i.value='';
-let r=await fetch('/.netlify/functions/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:t})});
-let d=await r.json();add(d.reply,'a');
+let input=document.getElementById('text');let msg=input.value;if(!msg)return;
+add(msg,'user');input.value='';
+let res=await fetch('/.netlify/functions/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})});
+let data=await res.json();add(data.reply,'ai');
 }
-function add(txt,cls){document.getElementById('chat').innerHTML+=`<div class="m ${cls}">${txt}</div>`}
-document.getElementById('msg').addEventListener('keypress',e=>{if(e.key=='Enter')send()})
+function add(t,c){document.getElementById('messages').innerHTML+=`<div class="msg ${c}">${t}</div>`}
+document.getElementById('text').onkeypress=e=>{if(e.key=='Enter')send()};
 </script>
 </body>
 </html>
